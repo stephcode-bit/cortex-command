@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cortex — Cognitive Command Center</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg width="28" height="28" viewBox="0 0 100 100" fill="none">
+            <path d="M30 35 L50 25 L70 35 L70 65 L50 75 L30 65 Z" stroke="#FF4D00" stroke-width="6" stroke-linejoin="round" fill="none"/>
+            <circle cx="50" cy="50" r="6" fill="#FFB800"/>
+          </svg>
+          <span class="logo-text">Cortex</span>
+        </div>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">×</button>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-view="matrix">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <span>Priority Matrix</span>
+        </button>
+        <button class="nav-item" data-view="braindump">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Brain Dump</span>
+        </button>
+        <button class="nav-item" data-view="decisions">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Decision Ledger</span>
+        </button>
+        <button class="nav-item" data-view="focus">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Focus Mode</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="energy-widget">
+          <div class="energy-header">
+            <span>Energy Level</span>
+            <span id="energyValue">80%</span>
+          </div>
+          <input type="range" id="energySlider" min="0" max="100" value="80" class="energy-slider">
+        </div>
+        <button class="share-streak-btn" id="shareStreakBtn" onclick="app.openStreakModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share Streak
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="topbar-title">
+          <h1 id="pageTitle">Dashboard</h1>
+          <p class="date-display" id="dateDisplay"></p>
+        </div>
+        <div class="topbar-actions">
+          <!-- M3 Notification Bell -->
+          <div class="notification-bell">
+            <button class="btn-icon" id="notificationBell" aria-label="Notifications">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+            </button>
+            <!-- M3 Dropdown Menu -->
+            <div class="notification-dropdown" id="notificationDropdown">
+              <div class="notification-header">
+                <h4>Notifications</h4>
+                <button class="notification-clear" onclick="app.clearNotifications()">Clear all</button>
+              </div>
+              <div class="notification-list" id="notificationList">
+                <div class="notification-empty">No notifications yet</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-icon" id="themeToggle" aria-label="Toggle theme">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Views -->
+      <div class="content" id="content">
+        <!-- Dashboard View -->
+        <div class="view active" id="view-dashboard">
+          <div class="dashboard-grid">
+            <div class="card welcome-card">
+              <div class="card-body">
+                <h2 class="welcome-title">Good <span id="greeting">morning</span>, Full-Day Engagers.</h2>
+                <p class="welcome-subtitle">Your cognitive load is externalized. You have <span id="taskCount" class="highlight">0</span> active priorities today.</p>
+                <div class="quick-actions">
+                  <button class="btn btn-primary" onclick="app.navigate('braindump')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Brain Dump
+                  </button>
+                  <button class="btn btn-secondary" onclick="app.navigate('focus')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Start Focus
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card stats-card">
+              <div class="card-header">
+                <h3>Today's Pulse</h3>
+              </div>
+              <div class="card-body">
+                <div class="stats-grid">
+                  <div class="stat">
+                    <div class="stat-value" id="statTasks">0</div>
+                    <div class="stat-label">Tasks</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-value" id="statDecisions">0</div>
+                    <div class="stat-label">Decisions</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-value" id="statFocus">0m</div>
+                    <div class="stat-label">Focus Time</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-value" id="statEnergy">80%</div>
+                    <div class="stat-label">Energy</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card recent-card">
+              <div class="card-header">
+                <h3>Recent Decisions</h3>
+                <button class="btn-text" onclick="app.navigate('decisions')">View All</button>
+              </div>
+              <div class="card-body">
+                <div id="recentDecisions" class="empty-state">
+                  <p>No decisions logged yet. Start your Decision Ledger.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card quote-card">
+              <div class="card-body">
+                <blockquote id="dailyQuote">"The mind is for having ideas, not holding them."</blockquote>
+                <cite>— David Allen</cite>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Priority Matrix View -->
+        <div class="view" id="view-matrix">
+          <div class="matrix-header">
+            <h2>Eisenhower Matrix</h2>
+            <p class="matrix-subtitle">Categorize tasks by urgency and importance to eliminate decision fatigue.</p>
+          </div>
+          <div class="matrix-container">
+            <div class="matrix-quadrant q1">
+              <div class="quadrant-header">
+                <span class="quadrant-badge urgent">Urgent</span>
+                <span class="quadrant-badge important">Important</span>
+                <h3>Do First</h3>
+              </div>
+              <div class="task-list" id="q1List" data-quadrant="q1"></div>
+              <button class="add-task-btn" onclick="app.addTask('q1')">+ Add Task</button>
+            </div>
+            <div class="matrix-quadrant q2">
+              <div class="quadrant-header">
+                <span class="quadrant-badge not-urgent">Not Urgent</span>
+                <span class="quadrant-badge important">Important</span>
+                <h3>Schedule</h3>
+              </div>
+              <div class="task-list" id="q2List" data-quadrant="q2"></div>
+              <button class="add-task-btn" onclick="app.addTask('q2')">+ Add Task</button>
+            </div>
+            <div class="matrix-quadrant q3">
+              <div class="quadrant-header">
+                <span class="quadrant-badge urgent">Urgent</span>
+                <span class="quadrant-badge not-important">Not Important</span>
+                <h3>Delegate</h3>
+              </div>
+              <div class="task-list" id="q3List" data-quadrant="q3"></div>
+              <button class="add-task-btn" onclick="app.addTask('q3')">+ Add Task</button>
+            </div>
+            <div class="matrix-quadrant q4">
+              <div class="quadrant-header">
+                <span class="quadrant-badge not-urgent">Not Urgent</span>
+                <span class="quadrant-badge not-important">Not Important</span>
+                <h3>Eliminate</h3>
+              </div>
+              <div class="task-list" id="q4List" data-quadrant="q4"></div>
+              <button class="add-task-btn" onclick="app.addTask('q4')">+ Add Task</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brain Dump View -->
+        <div class="view" id="view-braindump">
+          <div class="braindump-container">
+            <div class="braindump-header">
+              <h2>Brain Dump</h2>
+              <p>Empty your mind. Capture everything without judgment. Later, categorize into your Priority Matrix.</p>
+            </div>
+            <div class="braindump-editor">
+              <textarea id="braindumpInput" placeholder="What's on your mind? Type anything...
+
+- Meeting with Sarah
+- Buy groceries
+- Fix the bug in login flow
+- Read chapter 3..." rows="6"></textarea>
+              <div class="editor-actions">
+                <button class="btn btn-primary" onclick="app.captureBrainDump()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                  Capture Thought
+                </button>
+                <button class="btn btn-secondary" onclick="app.categorizeDump()">
+                  Auto-Categorize
+                </button>
+              </div>
+            </div>
+            <div class="captured-thoughts" id="capturedThoughts">
+              <div class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <p>Your captured thoughts will appear here. Start dumping!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Decision Ledger View -->
+        <div class="view" id="view-decisions">
+          <div class="decisions-header">
+            <h2>Decision Ledger</h2>
+            <p>Log decisions to reduce analysis paralysis and build decision-making muscle.</p>
+          </div>
+          <div class="decision-form card">
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Decision</label>
+                  <input type="text" id="decisionTitle" placeholder="What are you deciding?">
+                </div>
+                <div class="form-group">
+                  <label>Context</label>
+                  <input type="text" id="decisionContext" placeholder="Why now? What's at stake?">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Options</label>
+                  <div id="optionsList" class="options-list">
+                    <input type="text" class="option-input" placeholder="Option A">
+                    <input type="text" class="option-input" placeholder="Option B">
+                  </div>
+                  <button class="btn-text" onclick="app.addOption()">+ Add Option</button>
+                </div>
+                <div class="form-group">
+                  <label>Expected Outcome</label>
+                  <select id="decisionOutcome">
+                    <option value="positive">Positive</option>
+                    <option value="neutral">Neutral</option>
+                    <option value="risky">Risky</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Reasoning</label>
+                <textarea id="decisionReasoning" rows="3" placeholder="Why this choice? What principles guide you?"></textarea>
+              </div>
+              <button class="btn btn-primary" onclick="app.logDecision()">Log Decision</button>
+            </div>
+          </div>
+          <div class="decisions-list" id="decisionsList"></div>
+        </div>
+
+        <!-- Focus Mode View -->
+        <div class="view" id="view-focus">
+          <div class="focus-container">
+            <div class="focus-visual">
+              <div class="focus-ring" id="focusRing">
+                <div class="focus-time" id="focusTime">25:00</div>
+                <div class="focus-label" id="focusLabel">Ready to Focus</div>
+              </div>
+            </div>
+            <div class="focus-controls">
+              <button class="btn btn-primary btn-large" id="focusStart" onclick="app.toggleFocus()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Start Focus
+              </button>
+              <button class="btn btn-secondary" id="focusReset" onclick="app.resetFocus()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                Reset
+              </button>
+            </div>
+            <div class="focus-settings">
+              <div class="setting-group">
+                <label>Duration</label>
+                <div class="duration-options">
+                  <button class="duration-btn active" data-duration="25">25m</button>
+                  <button class="duration-btn" data-duration="45">45m</button>
+                  <button class="duration-btn" data-duration="60">60m</button>
+                </div>
+              </div>
+              <div class="setting-group">
+                <label>Current Task</label>
+                <input type="text" id="focusTask" placeholder="e.g., 'Write Q3 roadmap draft' or 'Deep work on API design'">
+              </div>
+            </div>
+            <div class="focus-stats" id="focusStats">
+              <div class="focus-stat">
+                <span class="focus-stat-value" id="totalFocusSessions">0</span>
+                <span class="focus-stat-label">Sessions</span>
+              </div>
+              <div class="focus-stat">
+                <span class="focus-stat-value" id="totalFocusTime">0m</span>
+                <span class="focus-stat-label">Total Time</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Task Modal -->
+  <div class="modal" id="taskModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Task</h3>
+        <button class="modal-close" onclick="app.closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Task</label>
+          <input type="text" id="taskInput" placeholder="What needs to be done?">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="taskNotes" rows="2" placeholder="Any details..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Due</label>
+            <input type="date" id="taskDue">
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="taskPriority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="app.saveTask()">Save Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Streak Flash Card Modal -->
+  <div class="streak-modal-overlay" id="streakModal">
+    <div class="streak-modal">
+      <div class="streak-modal-header">
+        <h3>Share Your Streak</h3>
+        <button class="streak-modal-close" onclick="app.closeStreakModal()">×</button>
+      </div>
+      <div class="streak-card-preview">
+        <div class="streak-card" id="streakCard">
+          <div class="streak-card-brand">
+            <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
+              <path d="M30 35 L50 25 L70 35 L70 65 L50 75 L30 65 Z" stroke="#FF4D00" stroke-width="6" stroke-linejoin="round" fill="none"/>
+              <circle cx="50" cy="50" r="6" fill="#FFB800"/>
+            </svg>
+            <span>Cortex</span>
+          </div>
+          <div class="streak-card-number" id="streakNumber">0</div>
+          <div class="streak-card-label">Day Streak</div>
+          <div class="streak-card-stats">
+            <div class="streak-card-stat">
+              <div class="streak-card-stat-value" id="streakCardSessions">0</div>
+              <div class="streak-card-stat-label">Focus Sessions</div>
+            </div>
+            <div class="streak-card-stat">
+              <div class="streak-card-stat-value" id="streakCardMinutes">0</div>
+              <div class="streak-card-stat-label">Minutes</div>
+            </div>
+            <div class="streak-card-stat">
+              <div class="streak-card-stat-value" id="streakCardTasks">0</div>
+              <div class="streak-card-stat-label">Tasks Done</div>
+            </div>
+          </div>
+          <div class="streak-card-date" id="streakCardDate"></div>
+          <div class="streak-card-footer">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            cortex-command.vercel.app
+          </div>
+        </div>
+      </div>
+      <div class="streak-actions">
+        <button class="btn btn-secondary" onclick="app.closeStreakModal()">Close</button>
+        <button class="btn btn-primary" onclick="app.copyStreakCard()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+        <button class="btn btn-primary" onclick="app.shareStreakNative()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
